@@ -9,6 +9,7 @@ export default defineConfig({
       "/movies": "http://localhost:3000",
       "/query-file": "http://localhost:3000",
       "/query": "http://localhost:3000",
+      "/schema": "http://localhost:3000",
     },
   },
 });

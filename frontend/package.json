@@ -9,8 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@xyflow/react": "^12.11.0",
+    "autoprefixer": "^10.5.0",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.18.0",
+    "postcss": "^8.5.15",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-is": "^19.2.7",
+    "recharts": "^3.8.1",
+    "tailwindcss": "^3.4.19"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.6.0",
