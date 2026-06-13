@@ -13,7 +13,10 @@ const normalizeSqlInput = (queryText) => {
   // Allow one optional, controlled search_path statement at the top of the file.
   sql = sql.replace(/^set\s+search_path\s+to\s+movie_db\s*;\s*/i, "");
 
-  return sql.trim();
+  // Clean leading comments again (in case comments were placed immediately after the search_path line)
+  sql = removeLeadingComments(sql).trim();
+
+  return sql;
 };
 
 const isReadOnlyQuery = (queryText) => {
@@ -23,33 +26,32 @@ const isReadOnlyQuery = (queryText) => {
 };
 
 const executeReadOnlyQuery = async (queryToRun) => {
-  const client = await pool.connect();
-
-  let result;
+  // search_path=movie_db is already set at the pool connection level (db.js options).
+  // Use pool.query() directly — 1 Neon round-trip instead of 4 (BEGIN + SET + query + COMMIT).
   try {
-    await client.query("BEGIN");
-    await client.query("SET LOCAL search_path TO movie_db");
-    result = await client.query(queryToRun);
-    await client.query("COMMIT");
+    return await pool.query(queryToRun);
   } catch (err) {
-    await client.query("ROLLBACK");
+    if (err.message?.includes('connect')) {
+      throw new Error(`Database connection failed: ${err.message}. Check your DATABASE_URL in .env.`);
+    }
     throw err;
-  } finally {
-    client.release();
   }
-
-  return result;
 };
 
 const getMoviesWithProduction = async () => {
-  const result = await pool.query(`
-    SELECT m.title, m.release_date, p.name AS production_house
-    FROM movie_db.movie m
-    JOIN movie_db.production_house p
-    ON m.production_id = p.production_id
-  `);
-
-  return result.rows;
+  try {
+    const result = await pool.query(`
+      SELECT m.title, m.release_date, p.name AS production_house
+      FROM movie_db.movie m
+      JOIN movie_db.production_house p
+      ON m.production_id = p.production_id
+    `);
+    return result.rows;
+  } catch (connErr) {
+    throw new Error(
+      `Database query failed: ${connErr.message}. Ensure your DATABASE_URL is set correctly and the schema 'movie_db' has been initialized.`
+    );
+  }
 };
 
 const runSqlFromFile = async () => {
@@ -102,4 +104,121 @@ const runSqlFromText = async (sqlText) => {
   };
 };
 
-module.exports = { getMoviesWithProduction, runSqlFromFile, runSqlFromText };
+const getDatabaseSchemaMetadata = async () => {
+  const columnsQuery = `
+    SELECT 
+      table_name, 
+      column_name, 
+      data_type, 
+      is_nullable,
+      column_default
+    FROM information_schema.columns 
+    WHERE table_schema = 'movie_db'
+    ORDER BY table_name, ordinal_position;
+  `;
+
+  const pkQuery = `
+    SELECT
+      kcu.table_name, 
+      kcu.column_name
+    FROM 
+      information_schema.table_constraints AS tc 
+      JOIN information_schema.key_column_usage AS kcu
+        ON tc.constraint_name = kcu.constraint_name
+        AND tc.table_schema = kcu.table_schema
+    WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = 'movie_db';
+  `;
+
+  const fkQuery = `
+    SELECT
+      kcu.table_name,
+      kcu.column_name,
+      ccu.table_name  AS foreign_table_name,
+      ccu.column_name AS foreign_column_name
+    FROM information_schema.table_constraints AS tc
+    JOIN information_schema.key_column_usage AS kcu
+      ON tc.constraint_name = kcu.constraint_name
+     AND tc.table_schema    = kcu.table_schema
+     AND tc.constraint_type = 'FOREIGN KEY'
+    JOIN information_schema.referential_constraints AS rc
+      ON rc.constraint_name        = tc.constraint_name
+     AND rc.constraint_schema      = tc.table_schema
+    JOIN information_schema.key_column_usage AS ccu
+      ON ccu.constraint_name  = rc.unique_constraint_name
+     AND ccu.constraint_schema = rc.unique_constraint_schema
+     AND ccu.ordinal_position  = kcu.position_in_unique_constraint
+    WHERE tc.table_schema = 'movie_db'
+    ORDER BY kcu.table_name, kcu.ordinal_position;
+  `;
+
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (connErr) {
+    throw new Error(
+      `Database connection failed: ${connErr.message}. Check your root .env file database configuration URL.`
+    );
+  }
+
+  try {
+    const columnsResult = await client.query(columnsQuery);
+    const pkResult = await client.query(pkQuery);
+    const fkResult = await client.query(fkQuery);
+
+    if (columnsResult.rows.length === 0) {
+      throw new Error(
+        "No tables found in the 'movie_db' schema. Please execute the SQL scripts in the 'DATA' directory (schema.sql, dbms_inserts.sql, indexes.sql) in your Neon SQL Editor to initialize the database."
+      );
+    }
+
+    const schema = {};
+
+    columnsResult.rows.forEach(col => {
+      const tbl = col.table_name;
+      if (!schema[tbl]) {
+        schema[tbl] = {
+          tableName: tbl,
+          columns: [],
+          primaryKeys: [],
+          foreignKeys: []
+        };
+      }
+      schema[tbl].columns.push({
+        name: col.column_name,
+        type: col.data_type,
+        nullable: col.is_nullable === 'YES',
+        defaultVal: col.column_default
+      });
+    });
+
+    pkResult.rows.forEach(pk => {
+      const tbl = pk.table_name;
+      if (schema[tbl]) {
+        schema[tbl].primaryKeys.push(pk.column_name);
+      }
+    });
+
+    fkResult.rows.forEach(fk => {
+      const tbl = fk.table_name;
+      if (schema[tbl]) {
+        schema[tbl].foreignKeys.push({
+          column: fk.column_name,
+          foreignTable: fk.foreign_table_name,
+          foreignColumn: fk.foreign_column_name
+        });
+      }
+    });
+
+    return Object.values(schema);
+  } finally {
+    client.release();
+  }
+};
+
+module.exports = { 
+  getMoviesWithProduction, 
+  runSqlFromFile, 
+  runSqlFromText,
+  getDatabaseSchemaMetadata 
+};
+

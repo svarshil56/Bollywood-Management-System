@@ -35,4 +35,14 @@ const runAdHocQuery = async (req, res) => {
   }
 };
 
-module.exports = { getMovies, getQueryFileResult, runAdHocQuery };
+const getDatabaseSchema = async (req, res) => {
+  try {
+    const schema = await movieModel.getDatabaseSchemaMetadata();
+    res.json(schema);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = { getMovies, getQueryFileResult, runAdHocQuery, getDatabaseSchema };
+
