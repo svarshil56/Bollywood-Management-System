@@ -1,5 +1,7 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 export async function fetchMovies() {
-  const response = await fetch("/movies");
+  const response = await fetch(`${API_BASE_URL}/movies`);
 
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
@@ -10,7 +12,7 @@ export async function fetchMovies() {
 }
 
 export async function executeSqlQuery(sqlText) {
-  const response = await fetch("/query", {
+  const response = await fetch(`${API_BASE_URL}/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -33,3 +35,15 @@ export async function executeSqlQuery(sqlText) {
 
   return response.json();
 }
+
+export async function fetchDatabaseSchema() {
+  const response = await fetch(`${API_BASE_URL}/schema`);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+

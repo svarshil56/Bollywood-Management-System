@@ -1,31 +1,168 @@
 .stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.stats-grid-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1rem;
 }
 
 .stat-card {
-  padding: 18px 20px;
-  border: 1px solid var(--panel-border);
-  border-radius: 20px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  padding: 1.2rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: var(--transition-smooth);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-card-hover);
 }
 
 .stat-label {
-  display: block;
-  margin-bottom: 10px;
-  color: var(--muted);
-  font-size: 0.94rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-weight: 700;
+  color: var(--gold-text);
+  word-break: break-all;
 }
 
-@media (max-width: 860px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
+/* Speedometer Dial Container */
+.latency-dial-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.speedometer-viewport {
+  position: relative;
+  width: 150px;
+  height: 90px;
+  margin: 0.75rem 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.speedometer-arc {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 70px);
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 10px solid var(--border-color);
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  transform: rotate(-135deg);
+}
+
+/* Dynamic glow overlays based on speed status */
+.speedometer-arc.ultra-fast {
+  border-top-color: var(--color-success);
+  border-right-color: var(--color-success);
+  filter: drop-shadow(0 0 4px var(--color-success));
+}
+
+.speedometer-arc.normal {
+  border-top-color: var(--color-warning);
+  border-right-color: var(--color-warning);
+  filter: drop-shadow(0 0 4px var(--color-warning));
+}
+
+.speedometer-arc.slow {
+  border-top-color: var(--color-error);
+  border-right-color: var(--color-error);
+  filter: drop-shadow(0 0 4px var(--color-error));
+}
+
+.speedometer-needle {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 65px;
+  background: linear-gradient(to top, #ffffff, var(--gold-primary));
+  transform-origin: bottom center;
+  border-radius: 4px;
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.speedometer-pin {
+  position: absolute;
+  bottom: -6px;
+  left: calc(50% - 7px);
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border: 3px solid var(--bg-darkest);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.latency-value {
+  font-size: 1.6rem;
+  font-family: 'DM Serif Display', serif;
+  margin-top: 0.25rem;
+}
+
+.latency-status-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.latency-status-pill.ultra-fast {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.latency-status-pill.normal {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.latency-status-pill.slow {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.diagnostics-box {
+  margin-top: 0.75rem;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  width: 100%;
+  text-align: left;
 }
