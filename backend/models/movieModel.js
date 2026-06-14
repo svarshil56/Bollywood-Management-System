@@ -26,15 +26,34 @@ const isReadOnlyQuery = (queryText) => {
 };
 
 const executeReadOnlyQuery = async (queryToRun) => {
-  // search_path=movie_db is already set at the pool connection level (db.js options).
-  // Use pool.query() directly — 1 Neon round-trip instead of 4 (BEGIN + SET + query + COMMIT).
+  const client = await pool.connect();
   try {
-    return await pool.query(queryToRun);
+    // 1. Start a strict read-only transaction to block CTE data modification (e.g., WITH x AS (DELETE ...))
+    await client.query("BEGIN READ ONLY");
+    
+    // 2. Force Extended Query Protocol by passing `values: []`. 
+    // This physically blocks Query Stacking (e.g., SELECT *; DROP TABLE;) at the driver level.
+    const result = await client.query({
+      text: queryToRun,
+      values: []
+    });
+    
+    await client.query("COMMIT");
+    return result;
   } catch (err) {
+    await client.query("ROLLBACK");
     if (err.message?.includes('connect')) {
       throw new Error(`Database connection failed: ${err.message}. Check your DATABASE_URL in .env.`);
     }
+    if (err.message?.includes('read-only transaction')) {
+      throw new Error("Security Violation: Data modification statements are blocked.");
+    }
+    if (err.message?.includes('cannot insert multiple commands')) {
+      throw new Error("Security Violation: Multiple statements (query stacking) are blocked.");
+    }
     throw err;
+  } finally {
+    client.release();
   }
 };
 
