@@ -1,4 +1,4 @@
-import { LayoutDashboard, Code, Cpu, Layers, TrendingUp, Sparkles, Settings } from 'lucide-react';
+import { LayoutDashboard, Code, Cpu, Layers, TrendingUp, Sparkles, Settings, X } from 'lucide-react';
 import './Sidebar.css';
 
 /**
@@ -90,15 +90,25 @@ export default function Sidebar({
     activeQueryId, 
     onSelectQuery,
     isCopilotOpen,
-    onToggleCopilot
+    onToggleCopilot,
+    isOpen,
+    onClose
 }) {
     return (
-        <aside className="sidebar">
+        <>
+        <div 
+            className={`sidebar-overlay ${isOpen ? 'open' : ''}`} 
+            onClick={onClose}
+        ></div>
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
             {/* Logo */}
             <div className="sidebar-header">
                 <div className="logo cinematic-text">
                     CINE<span className="logo-accent">FLOW</span>
                 </div>
+                <button className="mobile-close-btn" onClick={onClose}>
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
             {/* Navigation links */}
@@ -146,21 +156,19 @@ export default function Sidebar({
                     </button>
                 </div>
 
-                {/* Show curated query presets when playground is open */}
-                {activeTab === 'playground' && (
-                    <div className="nav-group animate-stagger-2">
-                        <span className="nav-label">Query Presets</span>
-                        {PRESET_QUERIES.map((q) => (
-                            <button 
-                                key={q.id}
-                                className={`nav-item ${activeQueryId === q.id ? 'selected' : ''}`}
-                                onClick={() => onSelectQuery(q.sql, q.id)}
-                            >
-                                <span className="query-name text-[11px] truncate w-full">{q.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                )}
+                {/* Show curated query presets */}
+                <div className="nav-group animate-stagger-2">
+                    <span className="nav-label">Query Presets</span>
+                    {PRESET_QUERIES.map((q) => (
+                        <button 
+                            key={q.id}
+                            className={`nav-item ${activeTab === 'playground' && activeQueryId === q.id ? 'selected' : ''}`}
+                            onClick={() => onSelectQuery(q.sql, q.id)}
+                        >
+                            <span className="query-name text-[11px] truncate w-full">{q.label}</span>
+                        </button>
+                    ))}
+                </div>
 
                 <div className="nav-group mt-auto">
                     <button 
@@ -180,5 +188,6 @@ export default function Sidebar({
                 </div>
             </div>
         </aside>
+        </>
     );
 }

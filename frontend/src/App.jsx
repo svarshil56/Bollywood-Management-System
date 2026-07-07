@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Menu } from 'lucide-react';
 import DashboardHeader from './components/DashboardHeader';
 import QueryEditor from './components/QueryEditor';
 import StatsGrid from './components/StatsGrid';
@@ -54,8 +55,7 @@ export default function App() {
     // Overlay visibility states
     const [isPaletteOpen, setIsPaletteOpen] = useState(false);
     const [isCopilotOpen, setIsCopilotOpen] = useState(false);
-
-    // Showcase mode states removed
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // SQL execution history loaded from local storage
     const [history, setHistory] = useState(() => {
@@ -122,6 +122,8 @@ export default function App() {
     const handleSelectQuery = (sql, id) => {
         setSqlText(sql);
         setActiveQueryId(id);
+        setActiveTab('playground');
+        setIsMobileMenuOpen(false);
     };
 
     // Auto-run default query on initial application load
@@ -155,18 +157,38 @@ export default function App() {
             <div className="dashboard-container">
                 <Sidebar 
                     activeTab={activeTab}
-                    setActiveTab={setActiveTab}
+                    setActiveTab={(tab) => {
+                        setActiveTab(tab);
+                        setIsMobileMenuOpen(false);
+                    }}
                     activeQueryId={activeQueryId}
                     onSelectQuery={handleSelectQuery}
                     isCopilotOpen={isCopilotOpen}
-                    onToggleCopilot={() => setIsCopilotOpen(prev => !prev)}
+                    onToggleCopilot={() => {
+                        setIsCopilotOpen(prev => !prev);
+                        setIsMobileMenuOpen(false);
+                    }}
+                    isOpen={isMobileMenuOpen}
+                    onClose={() => setIsMobileMenuOpen(false)}
                 />
                 
                 {/* Main layout frame: splits workspace if AI copilot side drawer is open */}
                 <main className="main-content" style={{ 
-                    width: `calc(100% - 280px - ${isCopilotOpen ? '320px' : '0px'})`,
-                    marginRight: isCopilotOpen ? '320px' : '0px' 
+                    '--copilot-width': isCopilotOpen ? '320px' : '0px'
                 }}>
+                    {/* Mobile Header */}
+                    <div className="lg:hidden flex justify-between items-center px-4 py-3 border-b border-borderDark bg-bgCard sticky top-0 z-40 mb-4">
+                        <div className="logo cinematic-text text-lg">
+                            CINE<span className="logo-accent">FLOW</span>
+                        </div>
+                        <button 
+                            className="p-1.5 text-textSecondary hover:text-textPrimary bg-bgDarkest border border-borderDark rounded"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                        >
+                            <Menu className="w-5 h-5" />
+                        </button>
+                    </div>
+
                     <div className="app-shell">
                         <DashboardHeader />
                         
@@ -224,7 +246,6 @@ export default function App() {
                                                     rowCount={rowCount} 
                                                     columnCount={columnCount} 
                                                     sourceFile={queryResult.source} 
-                                                    latency={queryResult.latency}
                                                 />
 
                                                 {activePreset && (
@@ -290,10 +311,15 @@ export default function App() {
                 </main>
 
                 {/* ChatGPT-style side drawer panel */}
+                {isCopilotOpen && (
+                    <div 
+                        className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[45]" 
+                        onClick={() => setIsCopilotOpen(false)}
+                    ></div>
+                )}
                 <div 
-                    className="fixed right-0 top-0 h-screen bg-bgCard border-l border-borderDark shadow-lg transition-transform duration-300 z-50"
+                    className="fixed right-0 top-0 h-screen bg-bgCard border-l border-borderDark shadow-lg transition-transform duration-300 z-50 copilot-drawer"
                     style={{ 
-                        width: '320px', 
                         transform: isCopilotOpen ? 'translateX(0)' : 'translateX(100%)' 
                     }}
                 >
@@ -301,6 +327,7 @@ export default function App() {
                         onExecuteSql={runEditorQuery}
                         setSqlText={setSqlText}
                         onSwitchToPlayground={() => setActiveTab('playground')}
+                        onClose={() => setIsCopilotOpen(false)}
                     />
                 </div>
 

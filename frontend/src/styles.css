@@ -154,7 +154,27 @@ h1, h2, h3, h4, .font-serif {
   background-color: var(--bg-main);
   min-height: 100vh;
   position: relative;
-  transition: margin 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: margin 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  width: calc(100% - 280px - var(--copilot-width, 0px));
+  margin-right: var(--copilot-width, 0px);
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+.copilot-drawer {
+  width: 320px;
+}
+
+@media (max-width: 768px) {
+  .copilot-drawer {
+    width: 100vw;
+  }
 }
 
 .app-shell {
@@ -163,10 +183,34 @@ h1, h2, h3, h4, .font-serif {
   padding: 2.5rem 3.5rem;
 }
 
+@media (max-width: 1024px) {
+  .app-shell {
+    padding: 2rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 1.5rem 1rem;
+  }
+}
+
 /* Full-bleed container for Schema Explorer — breaks out of padded app-shell */
 .schema-fullbleed {
   margin: -2.5rem -3.5rem;
   padding: 0;
+}
+
+@media (max-width: 1024px) {
+  .schema-fullbleed {
+    margin: -2rem -2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .schema-fullbleed {
+    margin: -1.5rem -1rem;
+  }
 }
 
 /* Glassmorphic Panel Styles */

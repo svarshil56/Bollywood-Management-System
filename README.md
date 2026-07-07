@@ -60,11 +60,7 @@ Bollywood Management System/
 - **Dynamic Stats Grid**: Real-time KPI cards fetching actual database metrics (total revenue, active movies, etc.).
 - **Premium Aesthetics**: Glassmorphism UI, gradient borders, and animated micro-interactions for a polished experience.
 
-### 5. Command Palette (`Ctrl + K`)
-- Fuzzy search across pages and preset queries
-- Instantly loads and runs selected queries in the Playground
 
----
 
 ## 🗃️ Database Schema
 
@@ -204,8 +200,6 @@ Open **http://localhost:5173**
 | ERD Diagram | @xyflow/react (React Flow) |
 | Animations | Framer Motion |
 | Icons | Lucide React |
-
----
 
 ## 📌 DBMS Concepts Demonstrated
 

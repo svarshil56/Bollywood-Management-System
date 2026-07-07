@@ -17,6 +17,14 @@
     font-family: 'Inter', sans-serif;
 }
 
+@media (max-width: 1024px) {
+    .se-root {
+        grid-template-columns: 1fr;
+        grid-template-rows: 250px 400px auto;
+        height: auto;
+    }
+}
+
 /* ── Loading / Error screens ── */
 .se-fullscreen {
     width: 100%;
@@ -85,6 +93,12 @@
     background: #0c0c10;
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     overflow: hidden;
+}
+@media (max-width: 1024px) {
+    .se-sidebar {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
 }
 .se-sidebar-header {
     display: flex;
@@ -221,6 +235,12 @@
     flex-direction: column;
     overflow: hidden;
     border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+@media (max-width: 1024px) {
+    .se-erd-section {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
 }
 .se-section-header {
     display: flex;

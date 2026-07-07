@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { executeSqlQuery } from '../services/movieService';
-import { Send, Copy, Play, AlertTriangle, Cpu, Check } from 'lucide-react';
+import { Send, Copy, Play, AlertTriangle, Cpu, Check, X } from 'lucide-react';
 
 /**
  * ==========================================
@@ -312,7 +312,7 @@ const detectDangerousSQL = (sql) => {
 /* ══════════════════════════════════════════════════════════════
    COMPONENT
 ══════════════════════════════════════════════════════════════ */
-export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlayground }) {
+export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlayground, onClose }) {
     const [messages, setMessages] = useState([{
         sender: 'ai',
         text: 'Hello! I\'m your CineFlow Database Copilot.\n\nAsk me anything about movies, songs, box office, cast, directors, awards, theatre schedules, contracts, or reviews — I\'ll generate the SQL and explain it.',
@@ -380,9 +380,18 @@ export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlaygrou
                     <Cpu className="w-4 h-4 text-goldPrimary" />
                     <span className="font-serif text-sm font-semibold text-textPrimary tracking-wide uppercase">SQL Copilot</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-goldPrimary/10 text-goldPrimary text-[9px] font-mono border border-goldPrimary/20">
-                    ONLINE
-                </span>
+                <div className="flex items-center gap-3">
+                    <span className="px-2 py-0.5 rounded-full bg-goldPrimary/10 text-goldPrimary text-[9px] font-mono border border-goldPrimary/20 hidden sm:inline-block">
+                        ONLINE
+                    </span>
+                    <button 
+                        onClick={onClose} 
+                        className="lg:hidden p-1 -mr-1 text-textSecondary hover:text-textPrimary bg-bgDarkest border border-borderDark rounded"
+                        title="Close Copilot"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             {/* Messages */}

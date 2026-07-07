@@ -255,7 +255,7 @@ export default function AnalyticsDashboard() {
                 </div>
 
                 {/* Critic review Pie Chart */}
-                <div className="chart-panel" style={{ gridColumn: 'span 2' }}>
+                <div className="chart-panel chart-panel-wide">
                     <div className="chart-panel-header">
                         <h3>CRITICS SENTIMENT SUMMARY</h3>
                         <p>Aggregated rating categories polarity distribution</p>

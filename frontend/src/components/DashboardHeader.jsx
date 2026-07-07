@@ -52,7 +52,7 @@ export default function DashboardHeader() {
                 </h1>
                 <p className="hero-copy">
                     Precision relational database profiling for Bollywood studio assets.
-                    Search database records, introspect tables, run performance race benchmarks, and monitor financial metrics.
+                    Search database records, introspect tables, and monitor financial metrics.
                 </p>
             </div>
         </section>
