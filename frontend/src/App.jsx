@@ -9,8 +9,6 @@ import Sidebar, { PRESET_QUERIES } from './components/Sidebar';
 import SchemaExplorer from './components/SchemaExplorer';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import CommandPalette from './components/CommandPalette';
-import QueryRace from './components/QueryRace';
-import TerminalConsole from './components/TerminalConsole';
 import Dashboard from './components/Dashboard';
 import AICopilot from './components/AICopilot';
 import { executeSqlQuery } from './services/movieService';
@@ -55,7 +53,6 @@ export default function App() {
 
     // Overlay visibility states
     const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-    const [isTerminalOpen, setIsTerminalOpen] = useState(false);
     const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
     // Showcase mode states removed
@@ -77,11 +74,6 @@ export default function App() {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
                 setIsPaletteOpen(prev => !prev);
-            }
-            // Sliding Developer Shell: Tilde (`) or ~
-            if (e.key === '`' || e.key === '~') {
-                e.preventDefault();
-                setIsTerminalOpen(prev => !prev);
             }
         };
         window.addEventListener('keydown', handleGlobalKeys);
@@ -158,12 +150,6 @@ export default function App() {
                 setActiveTab={setActiveTab}
                 setSqlText={setSqlText}
                 onRunQuery={runEditorQuery}
-            />
-
-            {/* Slide-out Terminal Console Drawer */}
-            <TerminalConsole 
-                isOpen={isTerminalOpen}
-                onClose={() => setIsTerminalOpen(false)}
             />
 
             <div className="dashboard-container">
@@ -271,8 +257,6 @@ export default function App() {
                                         <SchemaExplorer />
                                     </div>
                                 )}
-
-                                {activeTab === 'battle' && <QueryRace />}
 
                                 {activeTab === 'settings' && (
                                     <div className="panel space-y-6">

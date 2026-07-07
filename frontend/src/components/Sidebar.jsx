@@ -1,4 +1,4 @@
-import { LayoutDashboard, Code, Cpu, Layers, Swords, TrendingUp, Sparkles, Terminal, Settings } from 'lucide-react';
+import { LayoutDashboard, Code, Cpu, Layers, TrendingUp, Sparkles, Settings } from 'lucide-react';
 import './Sidebar.css';
 
 /**
@@ -136,13 +136,6 @@ export default function Sidebar({
                     >
                         <Layers className="w-4 h-4 text-textSecondary" />
                         <span className="query-name">Schema Explorer</span>
-                    </button>
-                    <button 
-                        className={`nav-item ${activeTab === 'battle' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('battle')}
-                    >
-                        <Swords className="w-4 h-4 text-textSecondary" />
-                        <span className="query-name">Query Battle Arena</span>
                     </button>
                     <button 
                         className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}

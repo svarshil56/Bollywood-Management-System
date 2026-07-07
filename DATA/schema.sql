@@ -1,6 +1,7 @@
 -- =========================
 -- SCHEMA SETUP
 -- =========================
+DROP SCHEMA IF EXISTS movie_db CASCADE;
 CREATE SCHEMA IF NOT EXISTS movie_db;
 SET search_path TO movie_db;
 

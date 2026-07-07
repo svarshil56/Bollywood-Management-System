@@ -74,10 +74,8 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab, setSqlTe
 
     }, [isOpen]);
 
-    // Define option lists based on search context
     const navItems = useMemo(() => [
         { id: 'nav-playground', name: 'Open SQL Playground', icon: '💻', desc: 'Execute queries, edit commands, and profile performance', type: 'tab', actionVal: 'playground' },
-        { id: 'nav-battle', name: 'SQL Battle Mode', icon: '🏎️', desc: 'Compare latency speeds of two queries in a head-to-head race', type: 'tab', actionVal: 'battle' },
         { id: 'nav-schema', name: 'Explore Database Schema', icon: '📂', desc: 'Introspect indexes, constraint columns, and foreign keys', type: 'tab', actionVal: 'schema' },
         { id: 'nav-analytics', name: 'View Insights Dashboard', icon: '📊', desc: 'Aggregated cumulative financial charts and score distributions', type: 'tab', actionVal: 'analytics' }
     ], []);

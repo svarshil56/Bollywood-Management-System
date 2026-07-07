@@ -6,10 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/movies": "http://localhost:3000",
-      "/query-file": "http://localhost:3000",
-      "/query": "http://localhost:3000",
-      "/schema": "http://localhost:3000",
+      "/movies": "http://127.0.0.1:3000",
+      "/query-file": "http://127.0.0.1:3000",
+      "/query": "http://127.0.0.1:3000",
+      "/schema": "http://127.0.0.1:3000",
     },
   },
 });

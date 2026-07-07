@@ -24,7 +24,9 @@ Bollywood Management System/
 │   ├── schema.sql             # Full 27-table DDL
 │   ├── dbms_inserts.sql       # Seed data
 │   └── indexes.sql            # B-Tree performance indexes
-└── seed_neon.js               # One-time Neon seeder script
+├── database/                  # Database utility scripts
+│   ├── json_to_sql.js         # Script to generate SQL inserts from JSON
+│   └── seed_neon.js           # One-time Neon cloud seeder script
 ```
 
 ---
@@ -58,16 +60,7 @@ Bollywood Management System/
 - **Dynamic Stats Grid**: Real-time KPI cards fetching actual database metrics (total revenue, active movies, etc.).
 - **Premium Aesthetics**: Glassmorphism UI, gradient borders, and animated micro-interactions for a polished experience.
 
-### 5. Query Race / Battle Mode
-- Race two SQL queries against each other
-- Animated progress bars show relative execution speed
-- Compares indexed vs. unindexed scans visually
-
-### 6. Terminal Console (`~` key)
-- Slide-up CLI terminal for plain-text database queries
-- Supported commands: `show movies`, `show actors`, `schema [table]`, `clear`, `exit`
-
-### 7. Command Palette (`Ctrl + K`)
+### 5. Command Palette (`Ctrl + K`)
 - Fuzzy search across pages and preset queries
 - Instantly loads and runs selected queries in the Playground
 
@@ -182,7 +175,7 @@ DATA/indexes.sql      → creates B-Tree performance indexes
 
 Or use the seeder script:
 ```bash
-node seed_neon.js
+node database/seed_neon.js
 ```
 
 ### 4. Run

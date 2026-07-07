@@ -31,6 +31,9 @@ const executeReadOnlyQuery = async (queryToRun) => {
     // 1. Start a strict read-only transaction to block CTE data modification (e.g., WITH x AS (DELETE ...))
     await client.query("BEGIN READ ONLY");
     
+    // Explicitly set search_path within the transaction to survive Neon's transaction-mode pooler
+    await client.query("SET LOCAL search_path TO movie_db");
+    
     // 2. Force Extended Query Protocol by passing `values: []`. 
     // This physically blocks Query Stacking (e.g., SELECT *; DROP TABLE;) at the driver level.
     const result = await client.query({
