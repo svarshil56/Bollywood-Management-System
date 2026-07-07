@@ -57,7 +57,7 @@ LIMIT 15;`;
     /* 2 ── Box office / revenue / grossing */
     if (is(t, /box.?office/, /highest.?gross/, /top.?gross/, /most.?revenue/, /highest.?revenue/, /total.?collection/)) {
         return `SET search_path TO movie_db;
-SELECT m.title, b.total_collection, b.opening_week_collection,
+SELECT m.title, b.total_collection, b.opening_day_collection,
        b.overseas_collection
 FROM movie m
 JOIN box_office b ON m.movie_id = b.movie_id
@@ -71,7 +71,8 @@ LIMIT 10;`;
 SELECT p.full_name, COUNT(DISTINCT cc.movie_id) AS movie_count
 FROM person p
 JOIN cast_crew cc ON p.person_id = cc.person_id
-WHERE cc.role_type = 'actor'
+JOIN role r ON cc.role_id = r.role_id
+WHERE r.role_name IN ('Actor', 'Actress')
 GROUP BY p.full_name
 ORDER BY movie_count DESC
 LIMIT 10;`;
@@ -82,7 +83,7 @@ LIMIT 10;`;
     const beforeYear = t.match(/before\s+(\d{4})/i);
     if (afterYear) {
         return `SET search_path TO movie_db;
-SELECT title, release_date, runtime_minutes, language
+SELECT title, release_date, runtime_minutes, age_rating
 FROM movie
 WHERE release_date > '${afterYear[1]}-01-01'
 ORDER BY release_date ASC
@@ -90,7 +91,7 @@ LIMIT 15;`;
     }
     if (beforeYear) {
         return `SET search_path TO movie_db;
-SELECT title, release_date, runtime_minutes, language
+SELECT title, release_date, runtime_minutes, age_rating
 FROM movie
 WHERE release_date < '${beforeYear[1]}-01-01'
 ORDER BY release_date DESC
@@ -114,9 +115,10 @@ ORDER BY m.budget DESC;`;
     if (is(t, /censor/, /certificate/, /cuts\s+ordered/, /cbfc/)) {
         return `SET search_path TO movie_db;
 SELECT m.title, c.certificate_type, c.cuts_ordered,
-       c.certificate_date, c.issuing_authority
+       c.issue_date, cb.authority_name
 FROM movie m
 JOIN censor_certificate c ON m.movie_id = c.movie_id
+JOIN censor_board cb ON c.censor_id = cb.censor_id
 ORDER BY c.cuts_ordered DESC
 LIMIT 10;`;
     }
@@ -126,7 +128,7 @@ LIMIT 10;`;
         const entity = extractEntity(t, /review/, /rating/, /sentiment/, /positive/, /negative/, /show\b/, /get\b/, /of\b/);
         if (entity.length > 1) {
             return `SET search_path TO movie_db;
-SELECT m.title, r.rating, r.sentiment, r.review_type, r.review_source
+SELECT m.title, r.rating, r.sentiment, r.review_type, r.published_on
 FROM movie m
 JOIN review r ON m.movie_id = r.movie_id
 WHERE m.title ILIKE '%${entity}%'
@@ -135,7 +137,7 @@ ORDER BY r.rating DESC;`;
         return `SET search_path TO movie_db;
 SELECT m.title,
        ROUND(AVG(r.rating)::numeric, 1) AS avg_rating,
-       COUNT(r.review_id) AS total_reviews
+       COUNT(r.published_on) AS total_reviews
 FROM movie m
 JOIN review r ON m.movie_id = r.movie_id
 GROUP BY m.title
@@ -152,7 +154,8 @@ SELECT m.title, p.full_name AS director, m.release_date
 FROM movie m
 JOIN cast_crew cc ON m.movie_id = cc.movie_id
 JOIN person p ON cc.person_id = p.person_id
-WHERE cc.role_type = 'director'
+JOIN role r ON cc.role_id = r.role_id
+WHERE r.role_name = 'Director'
   AND (p.full_name ILIKE '%${entity}%' OR m.title ILIKE '%${entity}%')
 ORDER BY m.release_date DESC;`;
         }
@@ -161,7 +164,8 @@ SELECT p.full_name AS director, COUNT(m.movie_id) AS movies_directed
 FROM person p
 JOIN cast_crew cc ON p.person_id = cc.person_id
 JOIN movie m ON cc.movie_id = m.movie_id
-WHERE cc.role_type = 'director'
+JOIN role r ON cc.role_id = r.role_id
+WHERE r.role_name = 'Director'
 GROUP BY p.full_name
 ORDER BY movies_directed DESC
 LIMIT 10;`;
@@ -172,19 +176,20 @@ LIMIT 10;`;
         const entity = extractEntity(t, /cast\b/, /actor/, /starring/, /who.*in\b/, /show\b/, /list\b/, /find\b/);
         if (entity.length > 1) {
             return `SET search_path TO movie_db;
-SELECT p.full_name, cc.role_type, cc.character_name
+SELECT p.full_name, r.role_name
 FROM person p
 JOIN cast_crew cc ON p.person_id = cc.person_id
+JOIN role r ON cc.role_id = r.role_id
 JOIN movie m ON cc.movie_id = m.movie_id
 WHERE m.title ILIKE '%${entity}%'
-ORDER BY cc.role_type;`;
+ORDER BY r.role_name;`;
         }
     }
 
     /* 10 ── Theatre / show schedule */
     if (is(t, /theatre/, /theater/, /show\s+schedule/, /screening/, /screen/)) {
         return `SET search_path TO movie_db;
-SELECT m.title, t.theatre_name, t.city, ss.show_datetime,
+SELECT m.title, t.name AS theatre_name, t.city, ss.show_datetime,
        ss.screen_format, ss.seats_sold
 FROM show_schedule ss
 JOIN movie m ON ss.movie_id = m.movie_id
@@ -196,12 +201,12 @@ LIMIT 15;`;
     /* 11 ── Contracts / salary */
     if (is(t, /contract/, /salary/, /payment/, /fee\b/)) {
         return `SET search_path TO movie_db;
-SELECT p.full_name, c.contract_type, c.contract_value,
-       c.start_date, c.end_date, m.title AS movie_title
+SELECT p.full_name, c.contract_type, c.remuneration,
+       ph.name AS production_house
 FROM contract c
 JOIN person p ON c.person_id = p.person_id
-JOIN movie m ON c.movie_id = m.movie_id
-ORDER BY c.contract_value DESC
+JOIN production_house ph ON c.production_id = ph.production_id
+ORDER BY c.remuneration DESC
 LIMIT 10;`;
     }
 
@@ -210,20 +215,22 @@ LIMIT 10;`;
         const entity = extractEntity(t, /award/, /nominat/, /won\b/, /winner/, /show\b/, /list\b/, /get\b/);
         if (entity.length > 1) {
             return `SET search_path TO movie_db;
-SELECT m.title, an.award_name, an.category_name, an.ceremony_year, an.result
-FROM movie m
-JOIN song_nomination sn ON m.movie_id = sn.movie_id
-JOIN award_nomination an ON sn.award_id = an.award_id
+SELECT m.title, a.award_name, ac.category_name, an.ceremony_year, an.result
+FROM award_nomination an
+JOIN movie m ON an.movie_id = m.movie_id
+JOIN award a ON an.award_id = a.award_id
+JOIN award_category ac ON an.category_id = ac.category_id
 WHERE m.title ILIKE '%${entity}%'
-   OR an.award_name ILIKE '%${entity}%'
+   OR a.award_name ILIKE '%${entity}%'
 ORDER BY an.ceremony_year DESC;`;
         }
         return `SET search_path TO movie_db;
-SELECT an.award_name, an.category_name, an.ceremony_year,
+SELECT a.award_name, ac.category_name, an.ceremony_year,
        m.title AS movie_title, an.result
 FROM award_nomination an
-JOIN song_nomination sn ON an.award_id = sn.award_id
-JOIN movie m ON sn.movie_id = m.movie_id
+JOIN movie m ON an.movie_id = m.movie_id
+JOIN award a ON an.award_id = a.award_id
+JOIN award_category ac ON an.category_id = ac.category_id
 WHERE an.result = 'Won'
 ORDER BY an.ceremony_year DESC
 LIMIT 10;`;
@@ -233,9 +240,9 @@ LIMIT 10;`;
     const langMatch = t.match(/\b(hindi|english|tamil|telugu|kannada|malayalam|punjabi|bengali)\b/i);
     if (langMatch) {
         return `SET search_path TO movie_db;
-SELECT title, release_date, runtime_minutes, language
+SELECT title, release_date, runtime_minutes, age_rating
 FROM movie
-WHERE language ILIKE '${langMatch[1]}'
+WHERE title ILIKE '%${langMatch[1]}%'
 ORDER BY release_date DESC
 LIMIT 15;`;
     }
@@ -256,7 +263,7 @@ LIMIT 12;`;
 
     /* 15 ── Default: all movies */
     return `SET search_path TO movie_db;
-SELECT title, release_date, runtime_minutes, language, budget
+SELECT title, release_date, runtime_minutes, budget
 FROM movie
 ORDER BY release_date DESC
 LIMIT 10;`;
@@ -355,7 +362,7 @@ export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlaygrou
     };
 
     const examples = [
-        'Songs of Razzi',
+        'Songs of Raazi',
         'Highest grossing movies',
         'Who directed Dangal?',
         'Cast of Pathaan',
@@ -484,7 +491,7 @@ export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlaygrou
             <div className="p-3 border-t border-borderDark bg-bgSecondary flex gap-2">
                 <input
                     type="text"
-                    placeholder="e.g. Songs of Razzi, cast of Pathaan…"
+                    placeholder="e.g. Songs of Raazi, cast of Pathaan…"
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
