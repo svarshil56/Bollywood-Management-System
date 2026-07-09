@@ -1,87 +1,100 @@
-# 🎬 CineFlow DBMS — Bollywood Database Management System
-
-A full-stack relational database management platform built on a **27-table normalized PostgreSQL schema** hosted on Neon Serverless. Designed as a 2nd-year DBMS project demonstrating real-world database concepts through an interactive visual dashboard.
-
----
-
-## 🗂️ Project Structure
-
-```
-Bollywood Management System/
-├── backend/                   # Node.js + Express API server
-│   ├── controllers/           # Route handler logic
-│   ├── models/movieModel.js   # SQL queries & schema introspection
-│   ├── routes/movieRoutes.js  # API endpoint definitions
-│   ├── db.js                  # PostgreSQL connection pool (Neon)
-│   └── server.js              # Express entry point
-├── frontend/                  # React + Vite dashboard
-│   └── src/
-│       ├── components/        # UI components
-│       ├── services/          # API service layer
-│       ├── styles.css         # Global design system
-│       └── App.jsx            # Root app with tab routing
-├── DATA/
-│   ├── schema.sql             # Full 27-table DDL
-│   ├── dbms_inserts.sql       # Seed data
-│   └── indexes.sql            # B-Tree performance indexes
-├── database/                  # Database utility scripts
-│   ├── json_to_sql.js         # Script to generate SQL inserts from JSON
-│   └── seed_neon.js           # One-time Neon cloud seeder script
-```
+<div align="center">
+  <img src="frontend/public/dashboard.png" alt="CineFlow Dashboard" width="100%">
+  
+  # 🎬 CineFlow DBMS
+  
+  **Bollywood Database Management System**
+  
+  A full-stack relational database management platform built on a **27-table normalized PostgreSQL schema** hosted on Neon Serverless. Designed as a comprehensive DBMS project demonstrating real-world database concepts through an interactive visual dashboard.
+</div>
 
 ---
 
-## 🚀 Features
+## 🎯 Use Cases (MVP)
 
-### 1. SQL Playground
-- Monaco-style query editor with syntax-aware execution
-- Supports `SET search_path TO movie_db;` at the top of any query
-- Only `SELECT` / `WITH` statements allowed (read-only enforcement)
-- **Execution Latency Profiler** — classifies queries as Ultra Fast / Normal / Slow
-- Query history saved to `localStorage` (last 6 runs)
+CineFlow is designed to solve real-world data management challenges in the film industry:
 
-### 2. Schema Explorer (Full-Screen ERD)
-- **3-panel layout**: table list sidebar · interactive ERD diagram · column inspector
-- React Flow ERD with zoom, pan, and drag — nodes dim/highlight based on selection
-- FK relationships shown as animated gold edges when a table is selected
-- Column inspector shows each column's name, type, PK/FK key badges
-- Clickable FK references navigate between related tables
+- **Studio Executives**: Track box office performance and viewership analytics across different regions and formats to make data-driven decisions.
+- **Data Analysts**: Execute complex SQL queries using the built-in Monaco editor to generate custom financial and performance reports.
+- **Database Administrators**: Visualize schema relationships and monitor execution latency of queries to optimize database performance.
+- **Production Managers**: Manage cast and crew contracts, budgets, and production schedules efficiently through the normalized relational schema.
 
-### 3. AI SQL Copilot
-- Natural language → SQL converter (client-side rule-based NLP)
-- Supports 15+ intent patterns: songs, box office, cast, directors, reviews, awards, contracts, theatre schedules, censor certificates, and more
-- Typed prompts like *"Songs of Razzi"* or *"Cast of Pathaan"* generate the correct JOIN query
-- "Run" button loads the generated SQL into the Playground and executes it
-- Animated thinking indicator while generating
+---
 
-### 4. Analytics Dashboard & Stats Grid
-- Pre-built charts showing revenue trends, genre distribution, and viewership metrics.
-- Built with Recharts — bar, area, and pie charts.
+## 🚀 Key Features
+
+### 1. Analytics Dashboard & Stats Grid
+<img src="frontend/public/analytics.png" alt="Analytics Dashboard" width="800">
+
 - **Dynamic Stats Grid**: Real-time KPI cards fetching actual database metrics (total revenue, active movies, etc.).
-- **Premium Aesthetics**: Glassmorphism UI, gradient borders, and animated micro-interactions for a polished experience.
+- Pre-built charts showing revenue trends, genre distribution, and viewership metrics (built with Recharts).
+- **Premium Aesthetics**: Glassmorphism UI, gradient borders, and animated micro-interactions.
 
+### 2. SQL Playground
+<img src="frontend/public/sqlplayground.png" alt="SQL Playground" width="800">
 
+- Monaco-style query editor with syntax-aware execution.
+- Supports `SET search_path TO movie_db;` at the top of any query.
+- Only `SELECT` / `WITH` statements allowed (read-only enforcement).
+- **Execution Latency Profiler** — classifies queries as Ultra Fast / Normal / Slow.
 
-## 🗃️ Database Schema
+### 3. Schema Explorer
+<img src="frontend/public/schema.png" alt="Schema Explorer" width="800">
 
-27 tables across 4 domains:
+- **3-panel layout**: table list sidebar, interactive ERD diagram, and column inspector.
+- Clickable FK references navigate between related tables.
 
-```
-[ PRODUCTION_HOUSE ] <--- [ CONTRACT ] ---> [ PERSON ]
-        |                                       ^
-        v                                       |
-[ FRANCHISE ] ---> [ MOVIE ] <---------- [ CAST_CREW ]
-                      |
-          +-----------+-----------+
-          |           |           |
-     [BOX_OFFICE] [ALBUM]    [REVIEW]
-                    |
-                 [SONG]
-          [CENSOR_CERTIFICATE]
-          [DISTRIBUTION_RIGHT] --> [DISTRIBUTOR]
-          [VIEWERSHIP_ANALYTICS]
-          [SHOW_SCHEDULE] --> [THEATRE]
-          [AWARD_NOMINATION] <--> [SONG_NOMINATION]
+### 4. AI SQL Copilot
+- Natural language → SQL converter (client-side rule-based NLP).
+- Supports 15+ intent patterns: songs, box office, cast, directors, reviews, awards, etc.
+- Typed prompts like *"Songs of Razzi"* or *"Cast of Pathaan"* generate the correct JOIN query.
+
+---
+
+## 🗃️ Database Schema (ERD)
+
+Below is the Entity-Relationship Diagram (ERD) demonstrating the normalized schema structure across our 27 tables:
+
+```mermaid
+erDiagram
+    PRODUCTION_HOUSE ||--o{ MOVIE : "produces"
+    FRANCHISE ||--o{ MOVIE : "contains"
+    MOVIE ||--o{ CAST_CREW : "has"
+    PERSON ||--o{ CAST_CREW : "features"
+    ROLE ||--o{ CAST_CREW : "role"
+    
+    PERSON ||--o{ CONTRACT : "signs"
+    PRODUCTION_HOUSE ||--o{ CONTRACT : "issues"
+    
+    MOVIE ||--o| BOX_OFFICE : "revenue"
+    BOX_OFFICE ||--o{ DAY_ENTRY : "daily"
+    
+    MOVIE ||--o{ ALBUM : "soundtrack"
+    MUSIC_LABEL ||--o{ ALBUM : "releases"
+    ALBUM ||--o{ SONG : "tracks"
+    
+    MOVIE ||--o{ REVIEW : "receives"
+    MOVIE ||--o{ GENRE : "has"
+    MOVIE ||--o{ LEGAL_DISPUTE : "involved_in"
+    
+    MOVIE ||--o{ CENSOR_CERTIFICATE : "certified"
+    CENSOR_BOARD ||--o{ CENSOR_CERTIFICATE : "issues"
+    
+    MOVIE ||--o{ DISTRIBUTION_RIGHT : "rights"
+    DISTRIBUTOR ||--o{ DISTRIBUTION_RIGHT : "holds"
+    
+    MOVIE ||--o{ VIEWERSHIP_ANALYTICS : "metrics"
+    DISTRIBUTOR ||--o{ VIEWERSHIP_ANALYTICS : "reports"
+    
+    MOVIE ||--o{ SHOW_SCHEDULE : "screened"
+    THEATRE ||--o{ SHOW_SCHEDULE : "hosts"
+    
+    AWARD ||--o{ AWARD_NOMINATION : "for"
+    AWARD_CATEGORY ||--o{ AWARD_NOMINATION : "in"
+    PERSON ||--o{ AWARD_NOMINATION : "receives"
+    MOVIE ||--o{ AWARD_NOMINATION : "receives"
+    AWARD_NOMINATION ||--o{ SONG_NOMINATION : "includes"
+    SONG ||--o{ SONG_NOMINATION : "nominated"
 ```
 
 ### Core Tables
