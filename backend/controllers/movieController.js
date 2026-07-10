@@ -27,6 +27,14 @@ const runAdHocQuery = async (req, res) => {
     });
   }
 
+  // Prevent destructive queries
+  const forbiddenRegex = /\b(DROP|DELETE|TRUNCATE|ALTER|CREATE|UPDATE|INSERT|REPLACE|GRANT|REVOKE)\b/i;
+  if (forbiddenRegex.test(sql)) {
+    return res.status(403).json({
+      error: "Destructive operations are not allowed. Only read queries are permitted.",
+    });
+  }
+
   try {
     const result = await movieModel.runSqlFromText(sql);
     res.json(result);
