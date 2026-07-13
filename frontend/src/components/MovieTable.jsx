@@ -51,7 +51,11 @@ export default function MovieTable({ rows = [], columns = [] }) {
                         </thead>
                         <tbody>
                             {rows.map((row, rowIndex) => (
-                                <tr key={`row-${rowIndex}`}>
+                                <tr 
+                                    key={`row-${rowIndex}`} 
+                                    className="animate-fade-in-row"
+                                    style={{ animationDelay: `${Math.min(rowIndex * 0.04, 0.6)}s` }}
+                                >
                                     {columns.map((col, colIndex) => (
                                         <td key={`${col}-${rowIndex}-${colIndex}`}>
                                             {formatCellValue(row[col])}

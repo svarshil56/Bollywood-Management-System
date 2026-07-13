@@ -124,8 +124,8 @@ LIMIT 10;`;
     }
 
     /* 7 ── Reviews / ratings */
-    if (is(t, /review/, /rating/, /sentiment/, /positive/, /negative/)) {
-        const entity = extractEntity(t, /review/, /rating/, /sentiment/, /positive/, /negative/, /show\b/, /get\b/, /of\b/);
+    if (is(t, /reviews?/, /ratings?/, /sentiment/, /positive/, /negative/)) {
+        const entity = extractEntity(t, /reviews?\b/, /ratings?\b/, /sentiment/, /positive/, /negative/, /show\b/, /get\b/);
         if (entity.length > 1) {
             return `SET search_path TO movie_db;
 SELECT m.title, r.rating, r.sentiment, r.review_type, r.published_on
@@ -155,7 +155,7 @@ FROM movie m
 JOIN cast_crew cc ON m.movie_id = cc.movie_id
 JOIN person p ON cc.person_id = p.person_id
 JOIN role r ON cc.role_id = r.role_id
-WHERE r.role_name = 'Director'
+WHERE r.role_name ILIKE 'director'
   AND (p.full_name ILIKE '%${entity}%' OR m.title ILIKE '%${entity}%')
 ORDER BY m.release_date DESC;`;
         }
@@ -165,7 +165,7 @@ FROM person p
 JOIN cast_crew cc ON p.person_id = cc.person_id
 JOIN movie m ON cc.movie_id = m.movie_id
 JOIN role r ON cc.role_id = r.role_id
-WHERE r.role_name = 'Director'
+WHERE r.role_name ILIKE 'director'
 GROUP BY p.full_name
 ORDER BY movies_directed DESC
 LIMIT 10;`;
@@ -182,7 +182,8 @@ JOIN cast_crew cc ON p.person_id = cc.person_id
 JOIN role r ON cc.role_id = r.role_id
 JOIN movie m ON cc.movie_id = m.movie_id
 WHERE m.title ILIKE '%${entity}%'
-ORDER BY r.role_name;`;
+  AND r.role_name ILIKE ANY (ARRAY['actor', 'actress', 'lead%', 'supporting%'])
+ORDER BY r.role_name, p.full_name;`;
         }
     }
 
@@ -240,10 +241,12 @@ LIMIT 10;`;
     const langMatch = t.match(/\b(hindi|english|tamil|telugu|kannada|malayalam|punjabi|bengali)\b/i);
     if (langMatch) {
         return `SET search_path TO movie_db;
-SELECT title, release_date, runtime_minutes, age_rating
-FROM movie
-WHERE title ILIKE '%${langMatch[1]}%'
-ORDER BY release_date DESC
+SELECT DISTINCT m.title, m.release_date, m.runtime_minutes
+FROM movie m
+JOIN album a ON m.movie_id = a.movie_id
+JOIN song s ON a.album_id = s.album_id
+WHERE s.language ILIKE '%${langMatch[1]}%'
+ORDER BY m.release_date DESC
 LIMIT 15;`;
     }
 
@@ -364,12 +367,10 @@ export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlaygrou
     const examples = [
         'Songs of Raazi',
         'Highest grossing movies',
-        'Who directed Dangal?',
-        'Cast of Pathaan',
+        'Reviews of Pathaan',
         'Movies released after 2020',
         'Censor cuts ordered',
         'Show awards won',
-        'Reviews of Jawan',
     ];
 
     return (
@@ -465,11 +466,11 @@ export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlaygrou
                 {isThinking && (
                     <div className="flex flex-col max-w-[90%] mr-auto">
                         <div className="p-3 rounded-lg bg-bgSecondary border border-borderDark rounded-bl-none">
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 bg-goldPrimary rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
-                                <span className="w-1.5 h-1.5 bg-goldPrimary rounded-full animate-bounce" style={{animationDelay:'120ms'}} />
-                                <span className="w-1.5 h-1.5 bg-goldPrimary rounded-full animate-bounce" style={{animationDelay:'240ms'}} />
-                                <span className="text-[10px] text-textMuted ml-1 font-mono">Generating SQL…</span>
+                            <div className="flex flex-col gap-2 w-48">
+                                <span className="text-[9px] text-goldPrimary uppercase tracking-widest block font-bold mb-1 animate-pulse">Generating SQL…</span>
+                                <div className="h-2.5 w-full skeleton-loader rounded"></div>
+                                <div className="h-2.5 w-3/4 skeleton-loader rounded"></div>
+                                <div className="h-2.5 w-1/2 skeleton-loader rounded"></div>
                             </div>
                         </div>
                     </div>
@@ -500,11 +501,11 @@ export default function AICopilot({ onExecuteSql, setSqlText, onSwitchToPlaygrou
             <div className="p-3 border-t border-borderDark bg-bgSecondary flex gap-2">
                 <input
                     type="text"
-                    placeholder="e.g. Songs of Raazi, cast of Pathaan…"
+                    placeholder="e.g. Songs of Raazi, reviews of Pathaan…"
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
-                    className="flex-1 bg-bgDarkest border border-borderDark rounded px-3 py-2 text-xs text-textPrimary outline-none focus:border-goldPrimary placeholder-textSecondary/40 font-sans"
+                    className="flex-1 bg-bgDarkest border border-borderDark rounded px-3 py-2 text-xs text-textPrimary outline-none focus:border-goldPrimary glowing-focus placeholder-textSecondary/40 font-sans"
                 />
                 <button
                     onClick={handleSend}

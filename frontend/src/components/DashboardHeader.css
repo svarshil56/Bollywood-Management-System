@@ -62,6 +62,7 @@
   line-height: 1.1;
   margin-bottom: 1.25rem;
   color: var(--text-primary);
+  letter-spacing: -0.02em; /* Tighter tracking for cinematic feel */
 }
 
 .text-gold-gradient {
@@ -69,7 +70,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(212, 175, 55, 0.1);
+  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.35)); /* Stronger glowing text shadow */
 }
 
 .hero-copy {

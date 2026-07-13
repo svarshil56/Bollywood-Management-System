@@ -1,5 +1,7 @@
 .table-wrap {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 500px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background: rgba(5, 5, 7, 0.3);
@@ -19,12 +21,18 @@
 }
 
 .movie-table th {
-  background: rgba(255, 255, 255, 0.01);
+  position: sticky;
+  top: 0;
+  background: rgba(15, 15, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
   color: var(--text-secondary);
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .movie-table tbody tr {

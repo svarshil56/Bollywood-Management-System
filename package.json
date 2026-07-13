@@ -2,7 +2,7 @@
   "name": "dbms",
   "version": "1.0.0",
   "description": "",
-  "main": "backend/server.js",
+  "main": "index.js",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",

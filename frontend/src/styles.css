@@ -331,3 +331,48 @@ button:disabled, .btn-action:disabled {
     transform: translateY(0);
   }
 }
+
+/* --- Cyber-Luxe Aesthetics --- */
+
+.glowing-focus:focus-within, .glowing-focus:focus {
+  box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.25), 0 0 8px rgba(212, 175, 55, 0.15) !important;
+  border-color: var(--gold-primary) !important;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* Tactile Active Buttons */
+button:active, .btn-action:active, .nav-item:active {
+  transform: scale(0.97);
+}
+
+/* Shimmering Skeleton Loader */
+.skeleton-loader {
+  background: linear-gradient(90deg, 
+    rgba(212, 175, 55, 0.03) 25%, 
+    rgba(212, 175, 55, 0.12) 50%, 
+    rgba(212, 175, 55, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Staggered Row Animation */
+.animate-fade-in-row {
+  animation: fadeInRow 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@keyframes fadeInRow {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
