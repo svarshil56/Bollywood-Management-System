@@ -65,6 +65,7 @@ CineFlow is designed to solve real-world data management challenges in the film 
 
 ### 4️⃣ AI SQL Copilot
 <img src="frontend/public/aicopilot.png" alt="AI SQL Copilot" width="800">
+
 - Natural language → SQL converter (client-side rule-based NLP)
 - Supports 15+ intent patterns: songs, box office, cast, directors, reviews, awards, etc.
 - Typed prompts like *"Songs of Razzi"* or *"Cast of Pathaan"* generate the correct JOIN query
